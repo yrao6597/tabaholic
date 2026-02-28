@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tab Analyzer</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="app">
+
+    <header class="header">
+      <div class="header-left">
+        <div class="title-row">
+          <h1>Tab Analyzer</h1>
+          <button class="btn-theme" id="btn-theme">☀ Light</button>
+        </div>
+        <span class="subtitle">Your attention, honestly.</span>
+      </div>
+      <div class="header-right">
+        <button class="btn-ghost" id="btn-settings">Settings</button>
+        <button class="btn-primary" id="btn-report">Generate Weekly Report</button>
+      </div>
+    </header>
+
+    <!-- Stats row -->
+    <section class="stats-row">
+      <div class="stat-card clickable" id="card-total-tabs">
+        <div class="stat-value" id="stat-total-tabs">—</div>
+        <div class="stat-label">Tabs opened (7 days)</div>
+        <div class="stat-hint">Click to explore ↗</div>
+      </div>
+      <div class="stat-card hero clickable" id="card-active-ratio">
+        <div class="stat-value" id="stat-active-ratio">—</div>
+        <div class="stat-label">Avg active ratio</div>
+        <div class="stat-sub">time focused / time open</div>
+        <div class="stat-hint">Click to explore ↗</div>
+      </div>
+      <div class="stat-card clickable" id="card-guilt-count">
+        <div class="stat-value" id="stat-guilt-count">—</div>
+        <div class="stat-label">Guilt tabs</div>
+        <div class="stat-sub">open &gt;5min, active &lt;10%</div>
+        <div class="stat-hint">Click to explore ↗</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-top-domain">—</div>
+        <div class="stat-label">Most visited domain</div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+
+      <!-- Left column -->
+      <div class="col-left">
+
+        <!-- Guilt tabs -->
+        <section class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">Guilt Tab Hall of Shame</h2>
+            <div class="info-btn" tabindex="0">
+              ?
+              <div class="tooltip">
+                <strong>Why we track this</strong>
+                <p>The gap between how long a tab <em>exists</em> vs. how long you actually <em>engage</em> with it reveals a hidden pattern: you opened it with intent, but never followed through. A high guilt tab count suggests decision fatigue — you're deferring choices by leaving tabs open "for later" instead of acting or discarding.</p>
+                <p style="margin-top:8px"><strong>Threshold:</strong> open &gt;5 min + active ratio &lt;10%</p>
+              </div>
+            </div>
+          </div>
+          <p class="card-sub">Tabs open a long time, barely touched</p>
+          <div id="guilt-list" class="guilt-list">
+            <div class="empty-state">No guilt tabs yet — you're doing great.</div>
+          </div>
+        </section>
+
+        <!-- Top domains -->
+        <section class="card">
+          <h2 class="card-title">Top Domains</h2>
+          <div id="domain-list" class="domain-list"></div>
+        </section>
+
+        <!-- Top categories -->
+        <section class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">Browsing Categories</h2>
+            <div class="info-btn" tabindex="0">
+              ?
+              <div class="tooltip">
+                <strong>Why we track this</strong>
+                <p>Domains are grouped into categories so you can see patterns at a higher level — not just which sites you visit, but <em>what kinds</em> of content you gravitate toward. A high Shopping or Social ratio alongside a low active ratio can reveal where your intention and your attention diverge.</p>
+              </div>
+            </div>
+          </div>
+          <p class="card-sub">Where your attention actually goes</p>
+          <div id="category-list" class="category-list"></div>
+        </section>
+
+      </div>
+
+      <!-- Right column -->
+      <div class="col-right">
+
+        <!-- Hourly chart -->
+        <section class="card">
+          <div class="card-title-row">
+            <h2 class="card-title">Hourly Tab Activity</h2>
+            <div class="info-btn" tabindex="0">
+              ?
+              <div class="tooltip tooltip-left">
+                <strong>Why we track this</strong>
+                <p>Peak tab-opening hours often reveal context-switching moments: task transitions, procrastination windows, or information-seeking bursts. Opening many tabs in a short window can signal mental overload — you're collecting instead of processing.</p>
+                <p style="margin-top:8px">Compare your peak open hour to your most productive hours to spot when distraction creeps in.</p>
+              </div>
+            </div>
+          </div>
+          <p class="card-sub">When you open tabs throughout the day</p>
+          <canvas id="hourly-chart" height="160"></canvas>
+        </section>
+
+        <!-- Claude report -->
+        <section class="card" id="report-card">
+          <div class="report-header">
+            <h2 class="card-title">Weekly Brain Report</h2>
+            <button class="btn-ghost btn-sm" id="btn-regenerate" style="display:none">Regenerate</button>
+          </div>
+          <div id="report-content" class="report-placeholder">
+            Click "Generate Weekly Report" to get your personalized cognitive patterns summary.
+          </div>
+          <div id="report-loading" class="report-loading" style="display:none">
+            <div class="spinner"></div>
+            <span>Analyzing your patterns...</span>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Detail breakdown modal -->
+    <div class="modal-overlay" id="detail-modal" style="display:none">
+      <div class="modal detail-modal">
+        <div class="detail-modal-header">
+          <h2 id="detail-modal-title">Breakdown</h2>
+          <button class="btn-icon" id="detail-modal-close">✕</button>
+        </div>
+        <div class="detail-modal-tabs" id="detail-modal-tabs"></div>
+        <div class="detail-modal-content" id="detail-modal-content"></div>
+      </div>
+    </div>
+
+    <!-- Settings modal -->
+    <div class="modal-overlay" id="settings-modal" style="display:none">
+      <div class="modal">
+        <h2>Settings</h2>
+        <label class="field-label">Anthropic API Key</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." class="field-input">
+        <p class="field-hint">Your key is stored locally and never sent anywhere except the Anthropic API.</p>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="btn-cancel">Cancel</button>
+          <button class="btn-primary" id="btn-save-key">Save</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="chart.min.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
