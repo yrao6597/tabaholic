@@ -457,6 +457,191 @@ function renderBreakdownByDomain(visits) {
   return `<div class="breakdown-list">${rows}</div>`;
 }
 
+// ── Active ratio breakdown views ──────────────────────────────────────────────
+
+function renderRatioBreakdownByDay(visits) {
+  const days   = last7Days();
+  const totals = Object.fromEntries(days.map(d => [d.key, { sum: 0, count: 0 }]));
+
+  for (const v of visits) {
+    const key = dayKey(new Date(v.opened_at));
+    if (key in totals) {
+      totals[key].sum += ratio(v);
+      totals[key].count++;
+    }
+  }
+
+  const rows = days.map(d => {
+    const { sum, count } = totals[d.key];
+    const avgRatio = count > 0 ? sum / count : 0;
+    const barWidth = Math.round(avgRatio * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">${d.label}</div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${pct(avgRatio)}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
+function renderRatioBreakdownByCategory(visits) {
+  const categories = buildCategoryStats(visits);
+  if (categories.length === 0) return `<div class="empty-state">No data yet.</div>`;
+
+  const sorted = [...categories].sort((a, b) => b.avgActiveRatio - a.avgActiveRatio);
+  const max    = sorted[0].avgActiveRatio || 1;
+
+  const rows = sorted.map(c => {
+    const barWidth = Math.round((c.avgActiveRatio / max) * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">
+          <span>${c.emoji}</span> <span>${c.name}</span>
+        </div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${pct(c.avgActiveRatio)}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
+function renderRatioBreakdownByDomain(visits) {
+  const domainMap = {};
+  for (const v of visits) {
+    if (!domainMap[v.domain]) domainMap[v.domain] = { sum: 0, count: 0 };
+    domainMap[v.domain].sum += ratio(v);
+    domainMap[v.domain].count++;
+  }
+
+  const domains = Object.entries(domainMap)
+    .map(([domain, { sum, count }]) => ({ domain, avgRatio: sum / count, count }))
+    .sort((a, b) => b.avgRatio - a.avgRatio)
+    .slice(0, 20);
+
+  if (domains.length === 0) return `<div class="empty-state">No data yet.</div>`;
+
+  const max  = domains[0].avgRatio || 1;
+  const rows = domains.map(d => {
+    const { emoji } = categorizeDomain(d.domain);
+    const barWidth  = Math.round((d.avgRatio / max) * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">
+          <span>${emoji}</span>
+          <span class="breakdown-domain" title="${d.domain}">${d.domain}</span>
+        </div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${pct(d.avgRatio)}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
+// ── Guilt tab breakdown views ─────────────────────────────────────────────────
+
+function renderGuiltBreakdownByDay(visits) {
+  const guilt = visits.filter(isGuiltTab);
+  const days  = last7Days();
+  const counts = Object.fromEntries(days.map(d => [d.key, 0]));
+
+  for (const v of guilt) {
+    const key = dayKey(new Date(v.opened_at));
+    if (key in counts) counts[key]++;
+  }
+
+  const max  = Math.max(...Object.values(counts), 1);
+  const rows = days.map(d => {
+    const count    = counts[d.key];
+    const barWidth = Math.round((count / max) * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">${d.label}</div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${count}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
+function renderGuiltBreakdownByCategory(visits) {
+  const guilt   = visits.filter(isGuiltTab);
+  if (guilt.length === 0) return `<div class="empty-state">No guilt tabs yet.</div>`;
+
+  const catMap = {};
+  for (const v of guilt) {
+    const cat = categorizeDomain(v.domain);
+    if (!catMap[cat.name]) catMap[cat.name] = { ...cat, count: 0 };
+    catMap[cat.name].count++;
+  }
+
+  const sorted = Object.values(catMap).sort((a, b) => b.count - a.count);
+  const max    = sorted[0].count;
+
+  const rows = sorted.map(c => {
+    const barWidth = Math.round((c.count / max) * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">
+          <span>${c.emoji}</span> <span>${c.name}</span>
+        </div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${c.count}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
+function renderGuiltBreakdownByDomain(visits) {
+  const guilt = visits.filter(isGuiltTab);
+  if (guilt.length === 0) return `<div class="empty-state">No guilt tabs yet.</div>`;
+
+  const domainMap = {};
+  for (const v of guilt) {
+    if (!domainMap[v.domain]) domainMap[v.domain] = { count: 0 };
+    domainMap[v.domain].count++;
+  }
+
+  const domains = Object.entries(domainMap)
+    .map(([domain, { count }]) => ({ domain, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20);
+
+  const max  = domains[0].count;
+  const rows = domains.map(d => {
+    const { emoji } = categorizeDomain(d.domain);
+    const barWidth  = Math.round((d.count / max) * 100);
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">
+          <span>${emoji}</span>
+          <span class="breakdown-domain" title="${d.domain}">${d.domain}</span>
+        </div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${barWidth}%"></div>
+        </div>
+        <div class="breakdown-value">${d.count}</div>
+      </div>`;
+  }).join("");
+
+  return `<div class="breakdown-list">${rows}</div>`;
+}
+
 // ── Report UI state ───────────────────────────────────────────────────────────
 
 function setReportLoading(on) {
@@ -466,8 +651,17 @@ function setReportLoading(on) {
 
 function showReport(text) {
   const el = document.getElementById("report-content");
-  el.className   = "report-content";
-  el.textContent = text;
+  el.className = "report-content";
+
+  // Convert basic markdown to HTML
+  const html = text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // escape first
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")  // **bold**
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")              // *italic*
+    .replace(/\n\n/g, "</p><p>")                        // paragraphs
+    .replace(/\n/g, "<br>");
+
+  el.innerHTML = `<p>${html}</p>`;
   document.getElementById("btn-regenerate").style.display = "inline-block";
 }
 
@@ -748,6 +942,30 @@ document.getElementById("card-total-tabs").addEventListener("click", () => {
       { label: "By Day",      render: () => renderBreakdownByDay(cachedVisits) },
       { label: "By Category", render: () => renderBreakdownByCategory(cachedVisits) },
       { label: "By Domain",   render: () => renderBreakdownByDomain(cachedVisits) },
+    ],
+  });
+});
+
+// Avg Active Ratio stat card → breakdown modal
+document.getElementById("card-active-ratio").addEventListener("click", () => {
+  detailModal.open({
+    title: "Avg Active Ratio — Breakdown",
+    tabs: [
+      { label: "By Day",      render: () => renderRatioBreakdownByDay(cachedVisits) },
+      { label: "By Category", render: () => renderRatioBreakdownByCategory(cachedVisits) },
+      { label: "By Domain",   render: () => renderRatioBreakdownByDomain(cachedVisits) },
+    ],
+  });
+});
+
+// Guilt Tabs stat card → breakdown modal
+document.getElementById("card-guilt-count").addEventListener("click", () => {
+  detailModal.open({
+    title: "Guilt Tabs — Breakdown",
+    tabs: [
+      { label: "By Day",      render: () => renderGuiltBreakdownByDay(cachedVisits) },
+      { label: "By Category", render: () => renderGuiltBreakdownByCategory(cachedVisits) },
+      { label: "By Domain",   render: () => renderGuiltBreakdownByDomain(cachedVisits) },
     ],
   });
 });
