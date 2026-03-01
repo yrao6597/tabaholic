@@ -177,7 +177,7 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
 // ─── Extension icon → open dashboard ──────────────────────────────────────────
 
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html") });
 });
 
 // ─── Messages from content script ─────────────────────────────────────────────
