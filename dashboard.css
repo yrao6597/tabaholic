@@ -561,6 +561,14 @@ body {
   font-style: normal;
 }
 
+/* ── Breakdown pie chart ── */
+.breakdown-pie {
+  max-width: 320px;
+  max-height: 180px;
+  margin: 0 auto 20px;
+  display: block;
+}
+
 /* ── Detail modal ── */
 .detail-modal {
   width: 560px;

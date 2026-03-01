@@ -765,13 +765,70 @@ async function generateReport() {
 
 // ── Detail modal ──────────────────────────────────────────────────────────────
 
+// ── Pie chart utility ─────────────────────────────────────────────────────────
+
+const PIE_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981",
+  "#3b82f6", "#ef4444", "#14b8a6", "#f97316", "#06b6d4",
+  "#a78bfa", "#34d399",
+];
+
+function drawBreakdownPie(el, labels, data) {
+  // Filter out zero entries so they don't clutter the legend
+  const filtered = labels.reduce((acc, label, i) => {
+    if (data[i] > 0) { acc.labels.push(label); acc.data.push(data[i]); }
+    return acc;
+  }, { labels: [], data: [] });
+
+  const canvas = document.createElement("canvas");
+  canvas.className = "breakdown-pie";
+  el.insertBefore(canvas, el.firstChild);
+
+  const isLight   = document.body.classList.contains("light");
+  const textColor = isLight ? "#3a3a4a" : "#c8c8d8";
+
+  return new Chart(canvas.getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: filtered.labels,
+      datasets: [{
+        data:            filtered.data,
+        backgroundColor: PIE_COLORS.slice(0, filtered.data.length),
+        borderWidth:     2,
+        borderColor:     isLight ? "#ffffff" : "#12121a",
+      }],
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: { color: textColor, font: { size: 11 }, padding: 10, boxWidth: 12 },
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = filtered.data.reduce((a, b) => a + b, 0);
+              return ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / total * 100)}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// ── Detail modal ──────────────────────────────────────────────────────────────
+
 const detailModal = {
-  overlay:   document.getElementById("detail-modal"),
-  titleEl:   document.getElementById("detail-modal-title"),
-  tabsEl:    document.getElementById("detail-modal-tabs"),
-  contentEl: document.getElementById("detail-modal-content"),
-  tabs:      [],
-  activeTab: 0,
+  overlay:       document.getElementById("detail-modal"),
+  titleEl:       document.getElementById("detail-modal-title"),
+  tabsEl:        document.getElementById("detail-modal-tabs"),
+  contentEl:     document.getElementById("detail-modal-content"),
+  tabs:          [],
+  activeTab:     0,
+  chartInstance: null,
 
   open({ title, tabs }) {
     this.tabs      = tabs;
@@ -783,7 +840,15 @@ const detailModal = {
   },
 
   close() {
+    this._destroyChart();
     this.overlay.style.display = "none";
+  },
+
+  _destroyChart() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = null;
+    }
   },
 
   renderTabs() {
@@ -804,7 +869,10 @@ const detailModal = {
   },
 
   renderContent() {
+    this._destroyChart();
     this.contentEl.innerHTML = this.tabs[this.activeTab].render();
+    const afterRender = this.tabs[this.activeTab].afterRender;
+    if (afterRender) this.chartInstance = afterRender(this.contentEl);
   },
 };
 
@@ -956,9 +1024,35 @@ document.getElementById("card-total-tabs").addEventListener("click", () => {
   detailModal.open({
     title: "Tabs Opened — Breakdown",
     tabs: [
-      { label: "By Day",      render: () => renderBreakdownByDay(cachedVisits) },
-      { label: "By Category", render: () => renderBreakdownByCategory(cachedVisits) },
-      { label: "By Domain",   render: () => renderBreakdownByDomain(cachedVisits) },
+      {
+        label: "By Day",
+        render: () => renderBreakdownByDay(cachedVisits),
+        afterRender: (el) => {
+          const days   = last7Days();
+          const counts = Object.fromEntries(days.map(d => [d.key, 0]));
+          for (const v of cachedVisits) {
+            const key = dayKey(new Date(v.opened_at));
+            if (key in counts) counts[key]++;
+          }
+          return drawBreakdownPie(el, days.map(d => d.label), days.map(d => counts[d.key]));
+        },
+      },
+      {
+        label: "By Category",
+        render: () => renderBreakdownByCategory(cachedVisits),
+        afterRender: (el) => {
+          const cats = buildCategoryStats(cachedVisits);
+          return drawBreakdownPie(el, cats.map(c => `${c.emoji} ${c.name}`), cats.map(c => c.visits));
+        },
+      },
+      {
+        label: "By Domain",
+        render: () => renderBreakdownByDomain(cachedVisits),
+        afterRender: (el) => {
+          const domains = topDomains(cachedVisits, 10);
+          return drawBreakdownPie(el, domains.map(d => d.domain), domains.map(d => d.count));
+        },
+      },
     ],
   });
 });
