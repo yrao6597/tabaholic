@@ -83,7 +83,7 @@ body {
 }
 
 .header h1 {
-  font-size: 22px;
+  font-size: 44px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.5px;
@@ -180,12 +180,16 @@ body {
 
 
 .stat-value {
-  font-size: 32px;
+  font-size: 64px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -1px;
   line-height: 1;
   margin-bottom: 6px;
+}
+
+#stat-top-domain {
+  font-size: 32px;
 }
 
 
@@ -233,7 +237,7 @@ body {
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 23px;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -974,12 +978,23 @@ body.zen .guilt-list:hover .guilt-item:hover { box-shadow: 0 0 0 1px #D4A896 ins
 }
 .trend-page.trend-page-active {
   display: block;
-  animation: trend-fade-in 0.22s ease;
 }
 
-@keyframes trend-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0);   }
+/* Directional slide-in animations */
+.trend-page.trend-page-active.trend-page-enter-right {
+  animation: trend-slide-in-right 0.22s ease;
+}
+.trend-page.trend-page-active.trend-page-enter-left {
+  animation: trend-slide-in-left 0.22s ease;
+}
+
+@keyframes trend-slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes trend-slide-in-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 /* Dot navigation */
@@ -1158,7 +1173,7 @@ body.zen .insight-callout-text,
 body.zen .report-placeholder,
 body.zen .empty-state,
 body.zen .trend-header {
-  font-family: 'Lora', Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   letter-spacing: 0;
 }
 

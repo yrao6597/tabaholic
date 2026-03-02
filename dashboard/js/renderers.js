@@ -148,7 +148,7 @@ function renderHourlyChart(visits) {
           tooltip: { callbacks: { label: ctx => `${ctx.raw} tab${ctx.raw !== 1 ? "s" : ""}` } },
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10, family: isZen ? "'Lora', Georgia, serif" : undefined } } },
+          x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10, family: isZen ? "'Cormorant Garamond', Georgia, serif" : undefined } } },
           y: { grid: { color: gridColor }, ticks: { color: tickColor, precision: 0 } },
         },
       },
@@ -417,7 +417,9 @@ function renderGuiltBreakdownByDomain(visits) {
 
 // ── 7-Day Trend card ──────────────────────────────────────────────────────────
 
-let trendPage = 0;
+let trendPage         = 0;
+let trendScrollLocked = false;
+let trendScrollAbort  = null;
 
 // Returns a human-readable comparison phrase with color class.
 // type: "ratio" (up = good), "guilt" (up = bad), "neutral"
@@ -568,28 +570,44 @@ function renderTrendCard(visits) {
       <span class="trend-dot${trendPage === 1 ? " active" : ""}" data-page="1" title="7-day breakdown"></span>
     </div>`;
 
-  document.getElementById("trend-dots").addEventListener("click", e => {
-    const dot = e.target.closest(".trend-dot");
-    if (!dot) return;
-    const next = parseInt(dot.dataset.page);
-    if (next === trendPage) return;
-
-    // Animate out current, in next
+  // Shared page-switch — slides in from the correct direction
+  function goTrendPage(next) {
+    if (next === trendPage || next < 0 || next >= 2) return;
     const pages = el.querySelectorAll(".trend-page");
     const dir   = next > trendPage ? 1 : -1;
     trendPage   = next;
 
     pages.forEach((p, i) => {
-      p.classList.remove("trend-page-active", "trend-page-enter", "trend-page-exit-left", "trend-page-exit-right");
+      p.classList.remove("trend-page-active", "trend-page-enter-right", "trend-page-enter-left");
       if (i === trendPage) {
-        p.classList.add("trend-page-enter-" + (dir > 0 ? "right" : "left"));
+        p.classList.add(dir > 0 ? "trend-page-enter-right" : "trend-page-enter-left");
         requestAnimationFrame(() => p.classList.add("trend-page-active"));
-      } else {
-        p.classList.add(dir > 0 ? "trend-page-exit-left" : "trend-page-exit-right");
       }
     });
 
     el.querySelectorAll(".trend-dot").forEach((d, i) => d.classList.toggle("active", i === trendPage));
+  }
+
+  // Dot click
+  document.getElementById("trend-dots").addEventListener("click", e => {
+    const dot = e.target.closest(".trend-dot");
+    if (!dot) return;
+    goTrendPage(parseInt(dot.dataset.page));
   });
+
+  // Scroll / swipe to flip pages
+  if (trendScrollAbort) trendScrollAbort.abort();
+  trendScrollAbort = new AbortController();
+  el.closest(".card").addEventListener("wheel", e => {
+    // Prefer horizontal delta (trackpad swipe); fall back to vertical
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const next  = delta > 0 ? trendPage + 1 : trendPage - 1;
+    if (next < 0 || next >= 2) return;  // nothing to flip — let page scroll through
+    e.preventDefault();
+    if (trendScrollLocked) return;
+    goTrendPage(next);
+    trendScrollLocked = true;
+    setTimeout(() => { trendScrollLocked = false; }, 420);
+  }, { passive: false, signal: trendScrollAbort.signal });
 }
 

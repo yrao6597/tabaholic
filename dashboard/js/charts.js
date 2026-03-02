@@ -55,7 +55,7 @@ function drawBreakdownPie(el, labels, data, formatValue) {
       plugins: {
         legend: {
           position: "right",
-          labels: { color: textColor, font: { size: 11, family: isZen ? "'Lora', Georgia, serif" : undefined }, padding: 14, boxWidth: 12, maxWidth: 180 },
+          labels: { color: textColor, font: { size: 11, family: isZen ? "'Cormorant Garamond', Georgia, serif" : undefined }, padding: 14, boxWidth: 12, maxWidth: 180 },
         },
         tooltip: {
           position: "cursor",
