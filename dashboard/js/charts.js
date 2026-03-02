@@ -7,11 +7,7 @@ Chart.Tooltip.positioners.cursor = function(_items, eventPos) {
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const PIE_COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981",
-  "#3b82f6", "#ef4444", "#14b8a6", "#f97316", "#06b6d4",
-  "#a78bfa", "#34d399",
-];
+// PIE_COLORS lives in colors.js
 
 const PIE_HEIGHT = 120;
 
@@ -35,7 +31,7 @@ function drawBreakdownPie(el, labels, data, formatValue) {
   wrapper.appendChild(canvas);
 
   const isLight   = document.body.classList.contains("light");
-  const textColor = isLight ? "#3a3a4a" : "#c8c8d8";
+  const textColor = isLight ? PIE_TEXT_LIGHT : PIE_TEXT_DARK;
 
   return new Chart(canvas.getContext("2d"), {
     type: "doughnut",
@@ -45,7 +41,7 @@ function drawBreakdownPie(el, labels, data, formatValue) {
         data:            filtered.data,
         backgroundColor: PIE_COLORS.slice(0, filtered.data.length),
         borderWidth:     2,
-        borderColor:     isLight ? "#ffffff" : "#12121a",
+        borderColor:     isLight ? PIE_BORDER_LIGHT : PIE_BORDER_DARK,
       }],
     },
     options: {

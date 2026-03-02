@@ -117,8 +117,8 @@ function renderHourlyChart(visits) {
   });
 
   const isLight       = document.body.classList.contains("light");
-  const emptyBarColor = isLight ? "#ebebf3" : "#1e1e28";
-  const gridColor     = isLight ? "#e2e2ec" : "#1e1e28";
+  const emptyBarColor = isLight ? BAR_EMPTY_LIGHT : BAR_EMPTY_DARK;
+  const gridColor     = isLight ? BAR_GRID_LIGHT  : BAR_GRID_DARK;
 
   if (hourlyChartInstance) {
     hourlyChartInstance.destroy();
@@ -133,7 +133,7 @@ function renderHourlyChart(visits) {
         labels,
         datasets: [{
           data:            counts,
-          backgroundColor: counts.map(c => c > 0 ? "#6366f1" : emptyBarColor),
+          backgroundColor: counts.map(c => c > 0 ? BAR_ACTIVE_COLOR : emptyBarColor),
           borderRadius:    4,
           borderSkipped:   false,
         }],
@@ -145,8 +145,8 @@ function renderHourlyChart(visits) {
           tooltip: { callbacks: { label: ctx => `${ctx.raw} tab${ctx.raw !== 1 ? "s" : ""}` } },
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: "#6b6b7a", font: { size: 10 } } },
-          y: { grid: { color: gridColor }, ticks: { color: "#6b6b7a", precision: 0 } },
+          x: { grid: { display: false }, ticks: { color: BAR_TICK_COLOR, font: { size: 10 } } },
+          y: { grid: { color: gridColor }, ticks: { color: BAR_TICK_COLOR, precision: 0 } },
         },
       },
     }
