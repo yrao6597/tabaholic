@@ -102,20 +102,30 @@ body {
   align-items: center;
 }
 
-/* ── Theme toggle ── */
-.btn-theme {
+/* ── Theme switcher ── */
+.theme-switcher {
+  display: flex;
   background: var(--surface-raised);
-  color: var(--text-muted);
   border: 1px solid var(--border-subtle);
   border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  padding: 2px;
+  gap: 2px;
 }
-.btn-theme:hover {
-  border-color: var(--accent);
-  color: var(--text-secondary);
+.theme-btn {
+  background: transparent;
+  border: none;
+  border-radius: 18px;
+  padding: 4px 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.theme-btn:hover:not(.active) { color: var(--text-secondary); }
+.theme-btn.active {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* ── Buttons ── */
@@ -240,6 +250,7 @@ body {
   font-size: 23px;
   font-weight: 600;
   color: var(--text-primary);
+  flex: 1;
 }
 
 .card-sub {
@@ -250,7 +261,6 @@ body {
 
 /* Minimize button — pushed to the far right of the title row */
 .btn-minimize {
-  margin-left: auto;
   flex-shrink: 0;
   background: none;
   border: none;
@@ -1339,22 +1349,12 @@ body.zen .insight-callout-label { color: #C4907A; }
 body.zen .trend-delta-good { color: #7A9A7A; }
 body.zen .trend-delta-bad  { color: #B06858; }
 
-/* ── Zen toggle button (always visible, all themes) ── */
-.btn-zen {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  line-height: 1;
+/* ── Zen mode theme switcher overrides ── */
+body.zen .theme-switcher {
+  border-color: transparent;
+  box-shadow: 0 1px 6px rgba(61, 53, 48, 0.08);
 }
-.btn-zen:hover {
-  border-color: #8FAF8F;
-  background: rgba(143, 175, 143, 0.1);
-}
-.btn-zen.active {
-  background: rgba(143, 175, 143, 0.2);
-  border-color: #8FAF8F;
+body.zen .theme-btn.active {
+  background: #8FAF8F;
+  color: #fff;
 }

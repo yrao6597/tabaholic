@@ -1,41 +1,45 @@
 // theme.js — Theme toggle; depends on renderers.js (renderHourlyChart, renderStats)
 
 function initTheme() {
-  const btn    = document.getElementById("btn-theme");
-  const btnZen = document.getElementById("btn-zen");
+  const btnLight = document.getElementById("btn-theme-light");
+  const btnDark  = document.getElementById("btn-theme-dark");
+  const btnZen   = document.getElementById("btn-theme-zen");
+  const allBtns  = [btnLight, btnDark, btnZen];
 
-  // Restore saved theme
-  const saved = localStorage.getItem("theme");
-  if (saved === "light") {
-    document.body.classList.add("light");
-    btn.textContent = "🌙 Dark";
-  } else if (saved === "zen") {
-    document.body.classList.add("zen");
-    btnZen.classList.add("active");
+  function activate(theme) {
+    document.body.classList.remove("light", "zen");
+    allBtns.forEach(b => b.classList.remove("active"));
+    if (theme === "light") {
+      document.body.classList.add("light");
+      btnLight.classList.add("active");
+    } else if (theme === "zen") {
+      document.body.classList.add("zen");
+      btnZen.classList.add("active");
+    } else {
+      btnDark.classList.add("active");
+    }
   }
 
-  // Light / dark toggle — exits zen if active
-  btn.addEventListener("click", () => {
-    document.body.classList.remove("zen");
-    btnZen.classList.remove("active");
-    const isLight = document.body.classList.toggle("light");
-    btn.textContent = isLight ? "🌙 Dark" : "☀ Light";
-    localStorage.setItem("theme", isLight ? "light" : "dark");
+  // Restore saved theme on load (no rerender — data not loaded yet)
+  activate(localStorage.getItem("theme") || "dark");
+
+  btnLight.addEventListener("click", () => {
+    activate("light");
+    localStorage.setItem("theme", "light");
     renderHourlyChart(cachedVisits);
     renderStats(cachedVisits);
   });
 
-  // Zen toggle — mutually exclusive with light/dark
+  btnDark.addEventListener("click", () => {
+    activate("dark");
+    localStorage.setItem("theme", "dark");
+    renderHourlyChart(cachedVisits);
+    renderStats(cachedVisits);
+  });
+
   btnZen.addEventListener("click", () => {
-    const isZen = document.body.classList.toggle("zen");
-    btnZen.classList.toggle("active", isZen);
-    if (isZen) {
-      document.body.classList.remove("light");
-      btn.textContent = "☀ Light";
-      localStorage.setItem("theme", "zen");
-    } else {
-      localStorage.setItem("theme", "dark");
-    }
+    activate("zen");
+    localStorage.setItem("theme", "zen");
     renderHourlyChart(cachedVisits);
     renderStats(cachedVisits);
   });
