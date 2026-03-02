@@ -822,9 +822,7 @@ body.zen .guilt-list:hover .guilt-item:hover { box-shadow: 0 0 0 1px #D4A896 ins
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--surface-raised);
+  background: transparent;
   outline: none;
 }
 .guilt-slider::-webkit-slider-thumb {
@@ -834,6 +832,7 @@ body.zen .guilt-list:hover .guilt-item:hover { box-shadow: 0 0 0 1px #D4A896 ins
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
+  margin-top: -6px;
 }
 .guilt-slider::-webkit-slider-runnable-track {
   background: var(--surface-raised);
