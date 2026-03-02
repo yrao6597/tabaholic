@@ -13,6 +13,22 @@ function closeSettings() {
   document.getElementById("settings-modal").style.display = "none";
 }
 
+// ── Reset History modal ────────────────────────────────────────────────────────
+
+function openResetModal() {
+  document.getElementById("reset-modal").style.display = "flex";
+}
+
+function closeResetModal() {
+  document.getElementById("reset-modal").style.display = "none";
+}
+
+async function confirmReset() {
+  await chrome.storage.local.remove(["visits", "tabStateSnapshot"]);
+  closeResetModal();
+  initDashboard();
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
 function initDashboard() {
@@ -213,6 +229,14 @@ document.getElementById("guilt-slider").addEventListener("input", e => {
 });
 document.getElementById("btn-view-guilt-tabs").addEventListener("click", toggleGuiltTabList);
 document.getElementById("btn-close-guilt-tabs").addEventListener("click", closeGuiltTabs);
+
+// Reset History modal
+document.getElementById("btn-reset-history").addEventListener("click", openResetModal);
+document.getElementById("btn-reset-cancel").addEventListener("click", closeResetModal);
+document.getElementById("btn-reset-confirm").addEventListener("click", confirmReset);
+document.getElementById("reset-modal").addEventListener("click", e => {
+  if (e.target === document.getElementById("reset-modal")) closeResetModal();
+});
 
 // Settings modal
 document.getElementById("btn-settings").addEventListener("click", openSettings);

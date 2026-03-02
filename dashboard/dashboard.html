@@ -17,6 +17,7 @@
         <span class="subtitle">Your attention, honestly.</span>
       </div>
       <div class="header-right">
+        <button class="btn-ghost btn-reset-history" id="btn-reset-history">Reset History</button>
         <button class="btn-ghost" id="btn-settings">Settings</button>
         <button class="btn-primary" id="btn-report">Generate Weekly Report</button>
       </div>
@@ -198,6 +199,22 @@
         <button class="btn-secondary btn-view-guilt" id="btn-view-guilt-tabs">👁 View Guilt Tabs</button>
         <div id="guilt-tab-list" class="guilt-tab-list" style="display:none"></div>
         <button class="btn-primary btn-guilt-close-all" id="btn-close-guilt-tabs">🗑️ Close All Guilt Tabs</button>
+      </div>
+    </div>
+
+    <!-- Reset History confirmation modal -->
+    <div class="modal-overlay" id="reset-modal" style="display:none">
+      <div class="modal reset-modal">
+        <h2>Reset Tab History?</h2>
+        <p class="reset-modal-body">
+          This will permanently delete all recorded visits from the last 7 days.
+          Your API key and layout preferences will not be affected.
+        </p>
+        <p class="reset-modal-warning">This cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="btn-reset-cancel">Cancel</button>
+          <button class="btn-danger" id="btn-reset-confirm">Yes, Reset History</button>
+        </div>
       </div>
     </div>
 

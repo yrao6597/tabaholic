@@ -144,6 +144,21 @@ body {
 }
 .btn-ghost:hover { border-color: var(--accent); color: var(--text-secondary); }
 
+.btn-reset-history:hover { border-color: var(--badge-red-text); color: var(--badge-red-text); }
+
+.btn-danger {
+  background: var(--badge-red-text);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-danger:hover { opacity: 0.85; }
+
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* ── Stats row ── */
@@ -920,4 +935,20 @@ body {
   opacity: 0.95;
   transform: rotate(1deg);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Reset History modal ─────────────────────────────────────────────────── */
+
+.reset-modal-body {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 12px 0 8px;
+}
+
+.reset-modal-warning {
+  color: var(--badge-red-text);
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 20px;
 }
