@@ -18,7 +18,8 @@ const PIE_HEIGHT = 120;
 // ── Doughnut / pie chart ──────────────────────────────────────────────────────
 // Renders a doughnut chart prepended to `el`. Returns the Chart instance.
 // Zero-value entries are filtered out so they don't clutter the legend.
-function drawBreakdownPie(el, labels, data) {
+// Optional `formatValue` fn formats the raw value in the tooltip (e.g. v => `${v}%`).
+function drawBreakdownPie(el, labels, data, formatValue) {
   const filtered = labels.reduce((acc, label, i) => {
     if (data[i] > 0) { acc.labels.push(label); acc.data.push(data[i]); }
     return acc;
@@ -61,7 +62,8 @@ function drawBreakdownPie(el, labels, data) {
           callbacks: {
             label: ctx => {
               const total = filtered.data.reduce((a, b) => a + b, 0);
-              return ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / total * 100)}%)`;
+              const val   = formatValue ? formatValue(ctx.raw) : ctx.raw;
+              return ` ${ctx.label}: ${val} (${Math.round(ctx.raw / total * 100)}%)`;
             },
           },
         },
